@@ -33,6 +33,23 @@ char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 	{1,1,1,1,1,1,1,1,1,1,1,1},
 };
 
+void make_background() { // 배경화면 생성
+	for (int j = 0; j < 12; j++) {
+		for (int i = 0; i < 12; i++) {
+			if (background[j][i] == 1) {
+				gotoxy(j, i);
+				printf("*");
+			}
+			else {
+				gotoxy(j, i);
+				printf("-");
+			}
+		}
+		printf("\n");
+	}
+}
+
+
 // block 생성
 void make_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
@@ -42,11 +59,10 @@ void make_block(int xx, int yy) {
 				gotoxy(j + xx, i + yy);
 				printf("*");
 			}
-			else {
-
-				gotoxy(j + xx, i + yy);
-				printf("-");
-			}
+			//else {
+			//	gotoxy(j + xx, i + yy);
+			//	printf("-");
+			//}
 		}
 		printf("\n");
 	}
@@ -57,15 +73,13 @@ void delete_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (block[i][j] == 1) {
-
 				gotoxy(j + xx, i + yy);
-				printf(" ");
+				printf("-");
 			}
-			else {
-
-				gotoxy(j + xx, i + yy);
-				printf(" ");
-			}
+			//else {
+			//	gotoxy(j + xx, i + yy);
+			//	printf(" ");
+			//}
 		}
 		printf("\n");
 	}
@@ -84,17 +98,17 @@ void main() {
 
 	// make_block(x, y); // 초기 블럭 생성
 
-
 	//강의 예제
 	while (1) {
+		make_background();
 		make_block(x, y);
 
-		while (1) {
-			if (count == 100) {
+		while (2< x< 7 and 2< y < 7) {
+			if (count == 10000) {
 				count = 0;
 
 				delete_block(x, y);
-				y++;
+				y++; // 밑으로 이동
 				make_block(x, y);
 
 			}
@@ -129,11 +143,42 @@ void main() {
 			}
 			count++;
 			Sleep(10);
+
+			//if (x < 1) {
+			//	x = 1;
+			//}
+			//else if (y < 1) {
+			//	y = 1;
+			//}
+			//else if (x > 6) {
+			//	x = 6;
+			//}
+			//else if (y > 7) {
+			//	y = 7;
+			//}
 		}
+
+
+		//if (x == 8) {
+		//	x--;
+		//}
+		//else if (y == 9) {
+		//	y--;
+		//}
+		//else if (x == 3) {
+		//	x++;
+		//}
+		//else if (y == 3) {
+		//	y++;
+		//}
+
+		// 끝에 다다르면 더 안넘어가게 하는 제어문
+
+
+
+		
+
+		//	break;
 	}
 
-
-
-	
 }
-
