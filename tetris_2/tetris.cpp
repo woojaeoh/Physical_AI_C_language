@@ -11,6 +11,11 @@ void gotoxy(int x, int y) { // 콘솔화면 내에서 x,y좌표로 이동
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
 
+void setcolor(int text_color, int bg_color)
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), text_color + (bg_color << 4));
+}
+
 char block[4][4] = { // 예제 테트리스 블럭 모양
 	{ 0, 0, 0, 0 },
 	{ 0, 1, 0, 0 },
@@ -99,86 +104,50 @@ void main() {
 	// make_block(x, y); // 초기 블럭 생성
 
 	//강의 예제
+	make_background();
+	make_block(x, y);
+
 	while (1) {
-		make_background();
-		make_block(x, y);
+		if (count == 100) {
+			count = 0;
 
-		while (2< x< 7 and 2< y < 7) {
-			if (count == 10000) {
-				count = 0;
-
-				delete_block(x, y);
-				y++; // 밑으로 이동
-				make_block(x, y);
-
-			}
+			delete_block(x, y);
+			y++; // 밑으로 이동
+			make_block(x, y);
+		}
 
 			//delete_block(x, y);
 			//x++; // 오른쪽으로
 			//y++; // 밑으로
 			//make_block(x, y);
 
-			if (_kbhit()) { // 키보드 입력이 있다면 
-				char key = _getch();
-				if (key == 'w') { // w: up key
-					delete_block(x, y);
-					y--;
-					make_block(x, y);
-				}
-				else if (key == 's') { // s: down key
-					delete_block(x, y);
-					y++;
-					make_block(x, y);
-				}
-				else if (key == 'a') { // a: left key
-					delete_block(x, y);
-					x--;
-					make_block(x, y);
-				}
-				else if (key == 'd') { // d: right key
-					delete_block(x, y);
-					x++;
-					make_block(x, y);
-				}
+		if (_kbhit()) { // 키보드 입력이 있다면 
+			char key = _getch();
+			if (key == 'w') { // w: up key
+				delete_block(x, y);
+				y--;
+				make_block(x, y);
 			}
-			count++;
-			Sleep(10);
-
-			//if (x < 1) {
-			//	x = 1;
-			//}
-			//else if (y < 1) {
-			//	y = 1;
-			//}
-			//else if (x > 6) {
-			//	x = 6;
-			//}
-			//else if (y > 7) {
-			//	y = 7;
-			//}
+			else if (key == 's') { // s: down key
+				delete_block(x, y);
+				y++;
+				make_block(x, y);
+			}
+			else if (key == 'a') { // a: left key
+				delete_block(x, y);
+				x--;
+				make_block(x, y);
+			}
+			else if (key == 'd') { // d: right key
+				delete_block(x, y);
+				x++;
+				make_block(x, y);
+			}
 		}
-
-
-		//if (x == 8) {
-		//	x--;
-		//}
-		//else if (y == 9) {
-		//	y--;
-		//}
-		//else if (x == 3) {
-		//	x++;
-		//}
-		//else if (y == 3) {
-		//	y++;
-		//}
+		count++;
+		Sleep(10);
+	}
 
 		// 끝에 다다르면 더 안넘어가게 하는 제어문
-
-
-
-		
-
-		//	break;
-	}
 
 }
