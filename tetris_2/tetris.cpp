@@ -67,8 +67,8 @@ char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,1,1,1,1,0,0,0,1,1,1,1},
+	{1,1,1,1,1,1,1,0,1,1,1,1},
 	{1,1,1,1,1,1,1,1,1,1,1,1},
 };
 
@@ -195,13 +195,12 @@ void insert_block(int xx , int yy) {
 	}
 }
 
-// line_check() : 각 줄마다 , 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
-
-int line_check() {
+// line_check() : 각 줄(line_num)마다 , 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
+int line_check(int line_num) {
 	
 	int count_block = 0; // 가로 줄에서 블럭이 몇개 있는지 카운트 -> 현 예제에서는 10개이면 한줄 빙고
 	for (int i = 0; i < 10; i++) { // 가로줄에서 1~10까지 column을 10번 체크한다.
-		if (background[10][i + 1] == 1) { // column의 값이 1이면 count_block를 증가시킨다.
+		if (background[line_num][i + 1] == 1) { // column의 값이 1이면 count_block를 증가시킨다.
 			count_block++;
 		}
 	}
@@ -230,33 +229,47 @@ void main() {
 				make_block(x, y);
 			}
 			else { //바닥에 닿았을 때
-				
+
 				insert_block(x, y); // 블럭을 배경에 삽입
 				make_background_value(); //숫자형 점수판 삽입
 
-				// 일단은 맨 밑 10번줄만 체크
-				int count_block = line_check(); // 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
+				//라인 체크를 위에서부터 해야지만 다음에 체크하는 아래줄도 체크하게된다.
+				// 그렇지 않고 아래서부터 체크하면 그 줄을 체크하고 내릴 경우 내려온 
+				// 위의 줄은 체크하지 못한다. 이미 내려와있기 때문에,
+				//그래서 k는 2~10까지 체크한다.
+				// k가 2부터인 경우는 제일 위의 줄은 제외하기 떄문이다.
+				for (int k = 2; k <= 10; k++) {
 
-				if (count_block == 10) { //한 줄이 꽉 찼다는 의미
-					// 1. 꽉 찼다면 지워주고
-					// 2. 위에 있는 블럭들을 한 줄씩 내려줘야 함. -> 위의 한 줄을 밑 줄에 copy한다.
-					for (int j = 10; j > 1; j--) {
-						for (int i = 0; i < 10; i++) {
-							background[j][i + 1] = background[j-1][i+1]; // 위 과정을 한번에 처리.	-> 9번줄에서 10번줄로 copy처리
+					int count_block = line_check(k); // 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
+					if (count_block == 10) { //한 줄이 꽉 찼다는 의미
+						// 1. 꽉 찼다면 지워주고
+						// 2. 위에 있는 블럭들을 한 줄씩 내려줘야 함. -> 위의 한 줄을 밑 줄에 copy한다.
+						for (int j = k; j > 1; j--) {
+							for (int i = 0; i < 10; i++) {
+								background[j][i + 1] = background[j - 1][i + 1]; // 위 과정을 한번에 처리.-> 9번줄에서 10번줄로 copy처리
+							}
 						}
-					}
 
-					// 백그라운드 블락을 다시 그려준다.
-					make_background();
-					// + 값도 삽입
-					make_background_value(); // 숫자형 점수판 삽입
-					
+						// 첫 줄도 업데이트를 해줘야 한다
+						// -> 첫 줄을 모두 0으로 채우기
+						for (int i = 0; i < 10; i++) {
+							background[1][i + 1] = 0;
+						}
+
+						// 백그라운드 블락을 다시 그려준다.
+						make_background();
+						// + 값도 삽입
+						make_background_value(); // 숫자형 점수판 삽입
+						Sleep(300);
+					}
 				}
+				// 백그라운드 블락을 다시 그려준다.
+				make_background();
+				make_background_value(); // 숫자형 점수판 삽입
 
 				x = 3;
 				y = 0;
-				//백그라운드도 수정해줘야 함.
-			}
+			}			
 		}
 
 		if (_kbhit()) { // 키보드 입력이 있다면 
@@ -319,5 +332,4 @@ void main() {
 		count++;
 		Sleep(10);
 	}
-		// 끝에 다다르면 더 안넘어가게 하는 제어문
 }
