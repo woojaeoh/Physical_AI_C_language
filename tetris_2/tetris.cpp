@@ -68,8 +68,8 @@ char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{ 1,1,1,1,1,1,1,1,1,1,1,1 },
+	{1,1,1,1,1,0,0,0,1,1,1,1},
+	{1,1,1,1,1,1,1,1,1,1,1,1},
 };
 
 void make_background() { // 배경화면 생성
@@ -167,6 +167,24 @@ int overlap_check(int xx, int yy) {
 	return count_overlap;
 }
 
+int overlap_check_rotate(int rotate_index_local, int xx, int yy) {
+
+	int count_overlap = 0;
+
+	for (int j = 0; j < 4; j++) {
+		for (int i = 0; i < 4; i++) {
+			if (block[rotate_index_local][j][i] == 1 && background[j + yy][i + xx] == 1)
+			{
+				count_overlap++;
+			}
+		}
+	}
+	//gotoxy(0, 12);
+	//printf("overlap count : %d\n", count_overlap);
+
+	return count_overlap;
+}
+
 void insert_block(int xx , int yy) {
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
@@ -177,7 +195,19 @@ void insert_block(int xx , int yy) {
 	}
 }
 
+// line_check() : 각 줄마다 , 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
 
+int line_check() {
+	
+	int count_block = 0; // 가로 줄에서 블럭이 몇개 있는지 카운트 -> 현 예제에서는 10개이면 한줄 빙고
+	for (int i = 0; i < 10; i++) { // 가로줄에서 1~10까지 column을 10번 체크한다.
+		if (background[10][i + 1] == 1) { // column의 값이 1이면 count_block를 증가시킨다.
+			count_block++;
+		}
+	}
+	
+	return count_block;
+}
 
 
 void main() {
@@ -203,6 +233,26 @@ void main() {
 				
 				insert_block(x, y); // 블럭을 배경에 삽입
 				make_background_value(); //숫자형 점수판 삽입
+
+				// 일단은 맨 밑 10번줄만 체크
+				int count_block = line_check(); // 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
+
+				if (count_block == 10) { //한 줄이 꽉 찼다는 의미
+					// 1. 꽉 찼다면 지워주고
+					// 2. 위에 있는 블럭들을 한 줄씩 내려줘야 함. -> 위의 한 줄을 밑 줄에 copy한다.
+					for (int j = 10; j > 1; j--) {
+						for (int i = 0; i < 10; i++) {
+							background[j][i + 1] = background[j-1][i+1]; // 위 과정을 한번에 처리.	-> 9번줄에서 10번줄로 copy처리
+						}
+					}
+
+					// 백그라운드 블락을 다시 그려준다.
+					make_background();
+					// + 값도 삽입
+					make_background_value(); // 숫자형 점수판 삽입
+					
+				}
+
 				x = 3;
 				y = 0;
 				//백그라운드도 수정해줘야 함.
@@ -213,15 +263,26 @@ void main() {
 			char key = _getch();
 			if (key == 'w') { // w: rotate key (회전 키)
 				
-				delete_block(x, y);
-				
-				rotate_index++; // 회전 인덱스 제어
-
-				if (rotate_index == 4) { // 마지막 회전 블락이면 처음으로 돌린다.
-					rotate_index = 0;
+				//rotate_index 변수를 받아서 임시변수(rotate_index_tmp)를 만든다.
+				int rotate_index_tmp = rotate_index;
+				rotate_index_tmp++; //임시 변수 rotate_index_tmp를 하나 증가시켜서
+				if (rotate_index_tmp == 4) { // 마지막 회전 블락을 넘어서 index가 4면, 처음으로 돌린다.
+					rotate_index_tmp = 0;
 				}
 
-				make_block(x, y); // 블럭 만들기
+				// 회전할 떄 ,overlap이 나는지 미리 체크해서 rotate가 문제 없다면 회전함.
+				int count_overlap_rotate = overlap_check_rotate(rotate_index_tmp, x, y); 
+				if (count_overlap_rotate == 0) {
+					delete_block(x, y);
+				
+					rotate_index++; // 블럭 회전
+
+					if (rotate_index == 4) { // 마지막 회전 블락이면 처음으로 돌린다.
+						rotate_index = 0; //처음 블락으로 세팅
+					}
+
+					make_block(x, y); // 블럭 만들기
+				}
 
 			}
 			else if (key == 's') { // s: down key
