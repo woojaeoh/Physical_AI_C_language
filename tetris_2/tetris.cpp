@@ -98,10 +98,10 @@ int overlap_check(int xx, int yy) {
 		for (int i = 0; i < 4; i++) {
 			if (block[j][i] == 1 && background[j + yy][i + xx] == 1)
 			{
-				setcolor(4, 0);
-				gotoxy(xx + i, yy + j);
-				printf("*");
-				setcolor(7, 0);
+				//setcolor(4, 0);
+				//gotoxy(xx + i, yy + j);
+				//printf("*");
+				//setcolor(7, 0);
 
 				count_overlap++;
 			}
@@ -141,34 +141,49 @@ void main() {
 		if (_kbhit()) { // 키보드 입력이 있다면 
 			char key = _getch();
 			if (key == 'w') { // w: up key
-				delete_block(x, y);
-				y--;
-				make_block(x, y);
+				int count_overlap = overlap_check(x, y - 1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 
-				overlap_check(x, y);
+				if (count_overlap == 0) {
+					delete_block(x, y);
+					y--;
+					make_block(x, y);
+				}
+
 			}
 			else if (key == 's') { // s: down key
-				delete_block(x, y);
-				y++;
-				make_block(x, y);
+				int count_overlap = overlap_check(x, y +1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 				
-				overlap_check(x, y);
+				if (count_overlap == 0) {
+					delete_block(x, y);
+					y++;
+					make_block(x, y);
+				}
+				
 
 			}
 			else if (key == 'a') { // a: left key
-				delete_block(x, y);
-				x--;
-				make_block(x, y);
+				
+				int count_overlap = overlap_check(x-1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 
-				overlap_check(x, y);
+				if (count_overlap == 0) {
+					delete_block(x, y);
+					x--;
+					make_block(x, y);
+
+				}
 			}
 			else if (key == 'd') { // d: right key
-				delete_block(x, y);
-				x++;
-				make_block(x, y);
+				
+				int count_overlap = overlap_check(x +1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 
-				overlap_check(x, y);
+				if (count_overlap == 0) {
+
+					delete_block(x, y);
+					x++;
+					make_block(x, y);
+				}
 			}
+
 		}
 		count++;
 		Sleep(10);
