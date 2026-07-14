@@ -16,11 +16,45 @@ void setcolor(int text_color, int bg_color)
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), text_color + (bg_color << 4));
 }
 
-char block[4][4] = { // 예제 테트리스 블럭 모양
-	{ 0, 0, 0, 0 },
-	{ 0, 1, 0, 0 },
-	{ 0, 1, 1, 1 },
-	{ 0, 0, 0, 0 }
+// 초기 예제 테트리스 블럭 모양
+//char block[4][4] = { 
+//	{ 0, 0, 0, 0 },
+//	{ 0, 1, 0, 0 },
+//	{ 0, 1, 1, 1 },
+//	{ 0, 0, 0, 0 }
+//};
+
+// 이동 좌표값 - 직접 ++, -- 처럼 관리 필요
+int x = 3;
+int y = 0;
+int count = 0;
+int rotate_index = 0;
+
+char block[4][4][4] ={
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 1, 0, 0 },
+				{ 0, 1, 1, 1 },
+				{ 0, 0, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 1, 0, 0 },
+				{ 0, 1, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 1, 1, 1, 0 },
+				{ 0, 0, 1, 0 },
+				{ 0, 0, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 1, 0 },
+				{ 0, 0, 1, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 0, 0, 0 }
+			}
 };
 
 char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다.
@@ -59,7 +93,9 @@ void make_background_value() {
 	for (int j = 0; j < 12; j++) {
 		for (int i = 0; i < 12; i++) {
 			if (background[j][i] == 1) {
-				setcolor(4, 0);
+				if (!((j == 0 || j == 11) || (i == 0 || i == 11))) {
+					setcolor(4, 0);
+				}
 				gotoxy(i + 14, j);
 				printf("1");
 				setcolor(7, 0);
@@ -77,7 +113,7 @@ void make_background_value() {
 void make_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[i][j] == 1) {
+			if (block[rotate_index][i][j] == 1) {
 				//setcolor(4, 0);
 				gotoxy(j + xx, i + yy);
 				printf("*");
@@ -96,7 +132,7 @@ void make_block(int xx, int yy) {
 void delete_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[i][j] == 1 && background[i + yy][j + xx] != 1) {
+			if (block[rotate_index][i][j] == 1 && background[i + yy][j + xx] != 1) {
 				gotoxy(j + xx, i + yy);
 				printf("-");
 			}
@@ -114,7 +150,7 @@ int overlap_check(int xx, int yy) {
 	int count_overlap = 0;
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[j][i] == 1 && background[j + yy][i + xx] == 1)
+			if (block[rotate_index][j][i] == 1 && background[j + yy][i + xx] == 1)
 			{
 				//setcolor(4, 0);
 				//gotoxy(xx + i, yy + j);
@@ -134,7 +170,7 @@ int overlap_check(int xx, int yy) {
 void insert_block(int xx , int yy) {
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[j][i] == 1) {
+			if (block[rotate_index][j][i] == 1) {
 				background[j + yy][i + xx] = 1;
 			}
 		}
@@ -142,11 +178,6 @@ void insert_block(int xx , int yy) {
 }
 
 
-// 이동 좌표값 - 직접 ++, -- 처럼 관리 필요
-int x = 3;
-int y = 0;
-
-int count = 0;
 
 
 void main() {
@@ -180,14 +211,17 @@ void main() {
 
 		if (_kbhit()) { // 키보드 입력이 있다면 
 			char key = _getch();
-			if (key == 'w') { // w: up key
-				int count_overlap = overlap_check(x, y - 1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
+			if (key == 'w') { // w: rotate key (회전 키)
+				
+				delete_block(x, y);
+				
+				rotate_index++; // 회전 인덱스 제어
 
-				if (count_overlap == 0) {
-					delete_block(x, y);
-					y--;
-					make_block(x, y);
+				if (rotate_index == 4) { // 마지막 회전 블락이면 처음으로 돌린다.
+					rotate_index = 0;
 				}
+
+				make_block(x, y); // 블럭 만들기
 
 			}
 			else if (key == 's') { // s: down key
@@ -198,8 +232,6 @@ void main() {
 					y++;
 					make_block(x, y);
 				}
-				
-
 			}
 			else if (key == 'a') { // a: left key
 				
@@ -209,7 +241,6 @@ void main() {
 					delete_block(x, y);
 					x--;
 					make_block(x, y);
-
 				}
 			}
 			else if (key == 'd') { // d: right key
@@ -228,5 +259,4 @@ void main() {
 		Sleep(10);
 	}
 		// 끝에 다다르면 더 안넘어가게 하는 제어문
-
 }
