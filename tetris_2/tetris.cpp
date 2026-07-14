@@ -27,15 +27,15 @@ char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 	{1,1,1,1,1,1,1,1,1,1,1,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,1,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,1,1,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1},
+	{1,0,0,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,0,0,1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{ 1,1,1,1,1,1,1,1,1,1,1,1 },
 };
 
 void make_background() { // 배경화면 생성
@@ -54,6 +54,24 @@ void make_background() { // 배경화면 생성
 	}
 }
 
+//숫자형 점수판 삽입
+void make_background_value() { 
+	for (int j = 0; j < 12; j++) {
+		for (int i = 0; i < 12; i++) {
+			if (background[j][i] == 1) {
+				setcolor(4, 0);
+				gotoxy(i + 14, j);
+				printf("1");
+				setcolor(7, 0);
+			}
+			else {
+				gotoxy(i + 14, j);
+				printf("0");
+			}
+		}
+		printf("\n");
+	}
+}
 
 // block 생성
 void make_block(int xx, int yy) {
@@ -78,7 +96,7 @@ void make_block(int xx, int yy) {
 void delete_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[i][j] == 1 && background[i+yy][j+xx] != 1) {
+			if (block[i][j] == 1 && background[i + yy][j + xx] != 1) {
 				gotoxy(j + xx, i + yy);
 				printf("-");
 			}
@@ -107,36 +125,58 @@ int overlap_check(int xx, int yy) {
 			}
 		}
 	}
-	gotoxy(0, 12);
-	printf("overlap count : %d\n", count_overlap);
+	//gotoxy(0, 12);
+	//printf("overlap count : %d\n", count_overlap);
 
 	return count_overlap;
 }
 
+void insert_block(int xx , int yy) {
+	for (int j = 0; j < 4; j++) {
+		for (int i = 0; i < 4; i++) {
+			if (block[j][i] == 1) {
+				background[j + yy][i + xx] = 1;
+			}
+		}
+	}
+}
+
 
 // 이동 좌표값 - 직접 ++, -- 처럼 관리 필요
-int x = 0;
+int x = 3;
 int y = 0;
 
 int count = 0;
 
 
 void main() {
-	
+
 	// make_block(x, y); // 초기 블럭 생성
 
 	//강의 예제
 	make_background();
+	make_background_value(); //숫자형 점수판 삽입
 	make_block(x, y);
 
 	while (1) {
-		//if (count == 100) {
-		//	count = 0;
+		if (count == 50) {
+			count = 0;
 
-		//	delete_block(x, y);
-		//	y++; // 밑으로 이동
-		//	make_block(x, y);
-		//}
+			int count_overlap = overlap_check(x, y + 1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
+			if (count_overlap == 0){
+				delete_block(x, y);
+				y++; // 밑으로 이동
+				make_block(x, y);
+			}
+			else { //바닥에 닿았을 때
+				
+				insert_block(x, y); // 블럭을 배경에 삽입
+				make_background_value(); //숫자형 점수판 삽입
+				x = 3;
+				y = 0;
+				//백그라운드도 수정해줘야 함.
+			}
+		}
 
 		if (_kbhit()) { // 키보드 입력이 있다면 
 			char key = _getch();
@@ -177,7 +217,6 @@ void main() {
 				int count_overlap = overlap_check(x +1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 
 				if (count_overlap == 0) {
-
 					delete_block(x, y);
 					x++;
 					make_block(x, y);
