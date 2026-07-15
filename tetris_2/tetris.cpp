@@ -31,6 +31,7 @@ int y = 0;
 int count = 0;
 int rotate_index = 0; // 같은 블럭을 회전했을 때 구분하는 인덱스
 int block_index = 0; //블럭 종류를 구분하는 인덱스
+int prev_index = 1;
 
 #define RED		4
 #define GRAY	8
@@ -409,14 +410,18 @@ int line_check(int line_num) {
 
 // 
 
-void prev_block(int xx, int yy) {
+void make_preview_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[block_index + 1][rotate_index][i][j] == 1) {
-				setcolor(block_color[block_index + 1], 0);
+			if (block[prev_index][rotate_index][i][j] == 1) {
+				setcolor(block_color[prev_index], 0);
 				gotoxy(j + xx + 24, i + yy);
 				printf("*");
 				setcolor(7, 0);
+			}
+			else {
+				gotoxy(j + xx + 24, i + yy);
+				printf("-");
 			}
 		}
 		printf("\n");
@@ -431,7 +436,7 @@ void main() {
 	make_background();
 	make_background_value(); //숫자형 점수판 삽입
 	make_block(x, y);
-	prev_block(x, y);
+	make_preview_block(x, y);
 
 	while (1) {
 		if (count == 50) {
@@ -442,7 +447,7 @@ void main() {
 				delete_block(x, y);
 				y++; // 밑으로 이동
 				make_block(x, y);
-				prev_block(x, y);
+			//	make_preview_block(x, y);
 			}
 			else { //바닥에 닿았을 때
 
@@ -486,10 +491,18 @@ void main() {
 				x = 3;
 				y = 0;
 				rotate_index = 0; //초기화해서 첫 모양으로.
-				block_index++; // 블럭 종류 변경
-				if (block_index == 7) { // 블럭 종류가 2개이므로, 2를 넘으면 다시 0으로 초기화
-					block_index = 0;
+
+				//미리보기 인덱스 값(preview_index)을 새로 내리는 블락 인덱스(block_index)로 바꿔준다.
+				block_index = prev_index;
+				
+				prev_index++; // 블럭 종류 변경
+				if (prev_index == 7) { // 블럭 종류가 2개이므로, 2를 넘으면 다시 0으로 초기화
+					prev_index = 0;
 				}
+
+				make_preview_block(x, y);
+				// make_block을 해주는 이유 생각해보기
+				make_block(x, y);
 			}			
 		}
 
@@ -516,7 +529,7 @@ void main() {
 					}
 
 					make_block(x, y); // 블럭 만들기
-					prev_block(x, y);
+					//make_preview_block(x, y);
 				}
 
 			}
@@ -527,7 +540,7 @@ void main() {
 					delete_block(x, y);
 					y++;
 					make_block(x, y);
-					prev_block(x, y);
+					//make_preview_block(x, y);
 				}
 			}
 			else if (key == 'a') { // a: left key
@@ -538,7 +551,7 @@ void main() {
 					delete_block(x, y);
 					x--;
 					make_block(x, y);
-					prev_block(x, y);
+					//make_preview_block(x, y);
 				}
 			}
 			else if (key == 'd') { // d: right key
@@ -549,7 +562,7 @@ void main() {
 					delete_block(x, y);
 					x++;
 					make_block(x, y);
-					prev_block(x, y);
+					//prev_block(x, y);
 				}
 			}
 
