@@ -32,7 +32,7 @@ int count = 0;
 int rotate_index = 0; // 같은 블럭을 회전했을 때 구분하는 인덱스
 int block_index = 0; //블럭 종류를 구분하는 인덱스
 
-char block[2][4][4][4] ={
+char block[3][4][4][4] ={
 		{
 			{ // 예제 테트리스 블럭 모양
 				{ 0, 0, 0, 0 },
@@ -83,6 +83,32 @@ char block[2][4][4][4] ={
 				{ 0, 1, 1, 0 },
 				{ 0, 0, 0, 0 }
 			}
+		},
+	{
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 1, 0, 0 },
+				{ 0, 1, 0, 0 },
+				{ 0, 1, 0, 0 },
+				{ 0, 1, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 1, 1, 1, 1 },
+				{ 0, 0, 0, 0 },
+				{ 0, 0, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 1, 0 },
+				{ 0, 0, 1, 0 },
+				{ 0, 0, 1, 0 },
+				{ 0, 0, 1, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 0, 0, 0 },
+				{ 1, 1, 1, 1 },
+				{ 0, 0, 0, 0 }
+			}
 		}
 };
 
@@ -116,6 +142,12 @@ void make_background() { // 배경화면 생성
 			}
 			else if (background[j][i] == 3) {
 				setcolor(1, 0);
+				gotoxy(i, j);
+				printf("*");
+				setcolor(7, 0);
+			}
+			else if (background[j][i] == 4) {
+				setcolor(2, 0);
 				gotoxy(i, j);
 				printf("*");
 				setcolor(7, 0);
@@ -167,6 +199,12 @@ void make_block(int xx, int yy) {
 				}
 				else if (block_index == 1) {
 					setcolor(1, 0);
+					gotoxy(j + xx, i + yy);
+					printf("*");
+					setcolor(7, 0);
+				}
+				else if (block_index == 2) {
+					setcolor(2, 0);
 					gotoxy(j + xx, i + yy);
 					printf("*");
 					setcolor(7, 0);
@@ -246,6 +284,9 @@ void insert_block(int xx , int yy) {
 				}
 				else if (block_index == 1) {
 					background[j + yy][i + xx] = 3;
+				}
+				else if (block_index == 2) {
+					background[j + yy][i + xx] = 4;
 				}
 			}
 		}
@@ -328,7 +369,7 @@ void main() {
 				y = 0;
 				rotate_index = 0; //초기화해서 첫 모양으로.
 				block_index++; // 블럭 종류 변경
-				if (block_index == 2) { // 블럭 종류가 2개이므로, 2를 넘으면 다시 0으로 초기화
+				if (block_index == 3) { // 블럭 종류가 2개이므로, 2를 넘으면 다시 0으로 초기화
 					block_index = 0;
 				}
 			}			
