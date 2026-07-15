@@ -15,34 +15,8 @@ void setcolor(int text_color, int bg_color)
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), text_color + (bg_color << 4));
 }
 
-// 초기 예제 테트리스 블럭 모양
-//char block[4][4] = { 
-//	{ 0, 0, 0, 0 },
-//	{ 0, 1, 0, 0 },
-//	{ 0, 1, 1, 1 },
-//	{ 0, 0, 0, 0 }
-//};
 
-// 이동 좌표값 - 직접 ++, -- 처럼 관리 필요
-// x, y : 백그라운드의 행, 열을 나타내는 좌표 - 4x4 블락의 제일 왼쪽/위의 좌표이다.
-int x = 3;
-int y = 0;
-// count : 10ms 마다 카운팅해서 1초를 만들기 위한 변수
-int count = 0;
-int rotate_index = 0; // 같은 블럭을 회전했을 때 구분하는 인덱스
-int block_index = 0; //블럭 종류를 구분하는 인덱스
-int prev_index = 1;
-
-#define RED		4
-#define GRAY	8
-#define GREEN	2
-#define YELLOW	6
-#define PURPLE	5
-#define SKY		3
-#define ORANGE 14 
-char block_color[7] = {RED, ORANGE, GREEN, YELLOW, PURPLE, SKY,  GRAY }; // 0:빨간색, 1: 파란색, 2: 초록색 
-
-char block[7][4][4][4] ={
+char block[7][4][4][4] = {
 		{
 			{ // 예제 테트리스 블럭 모양
 				{ 0, 0, 0, 0 },
@@ -223,6 +197,7 @@ char block[7][4][4][4] ={
 		}
 };
 
+
 char background[22][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다.
 	{1,1,1,1,1,1,1,1,1,1,1,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
@@ -248,16 +223,42 @@ char background[22][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 	{1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
-void make_background() { // 배경화면 생성
+// 이동 좌표값 - 직접 ++, -- 처럼 관리 필요
+// x, y : 백그라운드의 행, 열을 나타내는 좌표 - 4x4 블락의 제일 왼쪽/위의 좌표이다.
+int x = 3;
+int y = 0;
+// count : 10ms 마다 카운팅해서 1초를 만들기 위한 변수
+int count = 0;
+int rotate_index = 0; // 같은 블럭을 회전했을 때 구분하는 인덱스
+int block_index = 0; //블럭 종류를 구분하는 인덱스
+int prev_index = 1;
+
+// 4x 4 x 4 단위로 접근하는 포인터
+char (*block_p)[4][4][4] = block;
+char (*background_p)[12] = background; // 배열 포인터
+
+
+#define RED		4
+#define GRAY	8
+#define GREEN	2
+#define YELLOW	6
+#define PURPLE	5
+#define SKY		3
+#define ORANGE 14 
+char block_color[7] = {RED, ORANGE, GREEN, YELLOW, PURPLE, SKY,  GRAY }; // 0:빨간색, 1: 파란색, 2: 초록색 
+
+
+// 배경화면 생성
+void make_background(char (*background_p)[12]) {  // 원하는 주소를 넣을 수 있다
 	for (int j = 0; j < 22; j++) {
 		for (int i = 0; i < 12; i++) {
-			if (background[j][i] > 1) {
-				setcolor(background[j][i], 0);
+			if (background_p[j][i] > 1) {
+				setcolor(background_p[j][i], 0);
 				gotoxy(i, j);
 				printf("*");
 				setcolor(7, 0);
 			}
-			else if (background[j][i] == 1) { //조건 추가 필요
+			else if (background_p[j][i] == 1) { //조건 추가 필요
 				setcolor(7, 0);
 				gotoxy(i, j);
 				printf("*");
@@ -272,21 +273,21 @@ void make_background() { // 배경화면 생성
 }
 
 //숫자형 점수판 삽입
-void make_background_value() { 
+void make_background_value(char (*background_p)[12]) {
 	for (int j = 0; j < 22; j++) {
 		for (int i = 0; i < 12; i++) {
-			if (background[j][i] >= 1) {
+			if (background_p[j][i] >= 1) {
 				if (!((j == 0 || j == 21) || (i == 0 || i == 11))) {
 					// setcolor : block_color[] 배열의 인덱스는 각 블락의 인덱스(0~6)인데
 					// 현재 함수에서는 block_index 변수가 없기 때문에
 					// background[][] 배열의 값에서 color 값을 가져온다.
 					// 그런데 background 배열에는 block_index 변수에 +2를 했기 떄문에
 					// background[j][i] -2 해 주어야지 block_index값과 동일한 값이 된다.
-					setcolor(background[j][i], 0);
+					setcolor(background_p[j][i], 0);
 				}
 			
 				gotoxy(i +14, j);
-				printf("%d", background[j][i]);
+				printf("%d", background_p[j][i]);
 				setcolor(7, 0); //color를 원래대로 돌려놓음.
 			
 			}
@@ -304,10 +305,10 @@ void make_background_value() {
 // 2. 
 
 // block 생성
-void make_block(int xx, int yy) {
+void make_block(char (*block_p)[4][4][4], int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[block_index][rotate_index][i][j] == 1) {
+			if (block_p[block_index][rotate_index][i][j] == 1) {
 				setcolor(block_color[block_index], 0);
 				gotoxy(j + xx, i + yy);
 				printf("*");
@@ -323,10 +324,10 @@ void make_block(int xx, int yy) {
 }
 
 // 블럭 삭제 - 화면에서 공백처리해서 지움 
-void delete_block(int xx, int yy) {
+void delete_block(char (*block_p)[4][4][4], char (*background_p)[12], int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[block_index][rotate_index][i][j] == 1 && background[i + yy][j + xx] != 1) {
+			if (block_p[block_index][rotate_index][i][j] == 1 && background_p[i + yy][j + xx] != 1) {
 					gotoxy(j + xx, i + yy);
 					printf("-");
 				}
@@ -339,11 +340,11 @@ void delete_block(int xx, int yy) {
 		printf("\n");
 	}
 
-int overlap_check(int xx, int yy) {
+int overlap_check(char (*block_p)[4][4][4], char (*background_p)[12],int xx, int yy) {
 	int count_overlap = 0;
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[block_index][rotate_index][j][i] == 1 && background[j + yy][i + xx] >= 1)
+			if (block_p[block_index][rotate_index][j][i] == 1 && background_p[j + yy][i + xx] >= 1)
 			{
 				//setcolor(4, 0);
 				//gotoxy(xx + i, yy + j);
@@ -360,13 +361,13 @@ int overlap_check(int xx, int yy) {
 	return count_overlap;
 }
 
-int overlap_check_rotate(int rotate_index_local, int xx, int yy) {
+int overlap_check_rotate(char (*block_p)[4][4][4], char (*background_p)[12],int rotate_index_local, int xx, int yy) {
 
 	int count_overlap = 0;
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[block_index][rotate_index_local][j][i] == 1 && background[j + yy][i + xx] >= 1)
+			if (block_p[block_index][rotate_index_local][j][i] == 1 && background_p[j + yy][i + xx] >= 1)
 			{
 				count_overlap++;
 			}
@@ -379,22 +380,22 @@ int overlap_check_rotate(int rotate_index_local, int xx, int yy) {
 }
 
 // 첫 background배열 0-> "-" , 1 이상 -> "*"로 변환하는 함수
-void insert_block(int xx , int yy) {
+void insert_block(char (*block_p)[4][4][4] , char (*background_p)[12],int xx , int yy) {
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[block_index][rotate_index][j][i] == 1) {
-				background[j + yy][i + xx] = block_color[block_index] ; //0은 "-" , 1은 "*" , 2이상부터 색깔
+			if (block_p[block_index][rotate_index][j][i] == 1) {
+				background_p[j + yy][i + xx] = block_color[block_index] ; //0은 "-" , 1은 "*" , 2이상부터 색깔
 			}
 		}
 	}
 }
 
 // line_check() : 각 줄(line_num)마다 , 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
-int line_check(int line_num) {
+int line_check(char (*background_p)[12] , int line_num) {
 	
 	int count_block = 0; // 가로 줄에서 블럭이 몇개 있는지 카운트 -> 현 예제에서는 10개이면 한줄 빙고
 	for (int i = 0; i < 10; i++) { // 가로줄에서 1~10까지 column을 10번 체크한다.
-		if (background[line_num][i + 1] >= 1) { // column의 값이 1이면 count_block를 증가시킨다.
+		if (background_p[line_num][i + 1] >= 1) { // column의 값이 1이면 count_block를 증가시킨다.
 			count_block++;
 		}
 	}
@@ -410,10 +411,10 @@ int line_check(int line_num) {
 
 // 
 
-void make_preview_block(int xx, int yy) {
+void make_preview_block(char (*block_p)[4][4][4], int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[prev_index][rotate_index][i][j] == 1) {
+			if (block_p[prev_index][rotate_index][i][j] == 1) {
 				setcolor(block_color[prev_index], 0);
 				gotoxy(j + xx + 24, i + yy);
 				printf("*");
@@ -433,26 +434,25 @@ void main() {
 	// make_block(x, y); // 초기 블럭 생성
 
 	//강의 예제
-	make_background();
-	make_background_value(); //숫자형 점수판 삽입
-	make_block(x, y);
-	make_preview_block(x, y);
+	make_background(background_p);
+	make_background_value(background_p); //숫자형 점수판 삽입
+	make_block(block_p, x, y);
+	make_preview_block(block_p, x, y);
 
 	while (1) {
 		if (count == 50) {
 			count = 0;
 
-			int count_overlap = overlap_check(x, y + 1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
+			int count_overlap = overlap_check(block_p, background_p,x, y + 1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 			if (count_overlap == 0){
-				delete_block(x, y);
+				delete_block(block_p, background_p,x, y);
 				y++; // 밑으로 이동
-				make_block(x, y);
-			//	make_preview_block(x, y);
+				make_block(block_p,x, y);
 			}
 			else { //바닥에 닿았을 때
 
-				insert_block(x, y); // 블럭을 배경에 삽입
-				make_background_value(); //숫자형 점수판 삽입
+				insert_block(block_p, background_p, x, y); // 블럭을 배경에 삽입
+				make_background_value(background_p); //숫자형 점수판 삽입
 
 				//라인 체크를 위에서부터 해야지만 다음에 체크하는 아래줄도 체크하게된다.
 				// 그렇지 않고 아래서부터 체크하면 그 줄을 체크하고 내릴 경우 내려온 
@@ -461,7 +461,7 @@ void main() {
 				// k가 2부터인 경우는 제일 위의 줄은 제외하기 떄문이다.
 				for (int k = 2; k <= 10; k++) {
 
-					int count_block = line_check(k); // 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
+					int count_block = line_check(background_p, k); // 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
 					if (count_block == 10) { //한 줄이 꽉 찼다는 의미
 						// 1. 꽉 찼다면 지워주고
 						// 2. 위에 있는 블럭들을 한 줄씩 내려줘야 함. -> 위의 한 줄을 밑 줄에 copy한다.
@@ -478,15 +478,15 @@ void main() {
 						}
 
 						// 백그라운드 블락을 다시 그려준다.
-						make_background();
+						make_background(background_p);
 						// + 값도 삽입
-						make_background_value(); // 숫자형 점수판 삽입
+						make_background_value(background_p); // 숫자형 점수판 삽입
 						Sleep(300);
 					}
 				}
 				// 백그라운드 블락을 다시 그려준다.
-				make_background();
-				make_background_value(); // 숫자형 점수판 삽입
+				make_background(background_p);
+				make_background_value(background_p); // 숫자형 점수판 삽입
 
 				x = 3;
 				y = 0;
@@ -500,9 +500,9 @@ void main() {
 					prev_index = 0;
 				}
 
-				make_preview_block(x, y);
+				make_preview_block(block_p, x, y);
 				// make_block을 해주는 이유 생각해보기
-				make_block(x, y);
+				make_block(block_p,x, y);
 			}			
 		}
 
@@ -518,9 +518,9 @@ void main() {
 				}
 
 				// 회전할 떄 ,overlap이 나는지 미리 체크해서 rotate가 문제 없다면 회전함.
-				int count_overlap_rotate = overlap_check_rotate(rotate_index_tmp, x, y); 
+				int count_overlap_rotate = overlap_check_rotate(block_p, background_p,rotate_index_tmp, x, y);
 				if (count_overlap_rotate == 0) {
-					delete_block(x, y);
+					delete_block(block_p, background_p, x, y);
 				
 					rotate_index++; // 블럭 회전
 
@@ -528,40 +528,39 @@ void main() {
 						rotate_index = 0; //처음 블락으로 세팅
 					}
 
-					make_block(x, y); // 블럭 만들기
-					//make_preview_block(x, y);
+					make_block(block_p,x, y); // 블럭 만들기
 				}
 
 			}
 			else if (key == 's') { // s: down key
-				int count_overlap = overlap_check(x, y +1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
+				int count_overlap = overlap_check(block_p, background_p, x, y +1); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 				
 				if (count_overlap == 0) {
-					delete_block(x, y);
+					delete_block(block_p, background_p, x, y);
 					y++;
-					make_block(x, y);
+					make_block(block_p,x, y);
 					//make_preview_block(x, y);
 				}
 			}
 			else if (key == 'a') { // a: left key
 				
-				int count_overlap = overlap_check(x-1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
+				int count_overlap = overlap_check(block_p, background_p,x-1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 
 				if (count_overlap == 0) {
-					delete_block(x, y);
+					delete_block(block_p, background_p, x, y);
 					x--;
-					make_block(x, y);
+					make_block(block_p, x, y);
 					//make_preview_block(x, y);
 				}
 			}
 			else if (key == 'd') { // d: right key
 				
-				int count_overlap = overlap_check(x +1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
+				int count_overlap = overlap_check(block_p, background_p,x +1, y); // 원래는 출력 후 지우기 -> overlap이 나는지 미리 체크해보기
 
 				if (count_overlap == 0) {
-					delete_block(x, y);
+					delete_block(block_p , background_p,x, y);
 					x++;
-					make_block(x, y);
+					make_block(block_p, x, y);
 					//prev_block(x, y);
 				}
 			}
