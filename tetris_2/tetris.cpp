@@ -104,9 +104,21 @@ char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 void make_background() { // 배경화면 생성
 	for (int j = 0; j < 12; j++) {
 		for (int i = 0; i < 12; i++) {
-			if (background[j][i] == 1) {
+			if (background[j][i] == 1) { //조건 추가 필요
 				gotoxy(i, j);
 				printf("*");
+			}
+			else if (background[j][i] == 2) {
+				setcolor(4, 0);
+				gotoxy(i, j);
+				printf("*");
+				setcolor(7, 0);
+			}
+			else if (background[j][i] == 3) {
+				setcolor(1, 0);
+				gotoxy(i, j);
+				printf("*");
+				setcolor(7, 0);
 			}
 			else {
 				gotoxy(i, j);
@@ -138,15 +150,27 @@ void make_background_value() {
 	}
 }
 
+// 1. ㄴ자는 빨갛게, ㅁ자는 파랗게 -> block_index 0, 1로 구분해서 색깔을 다르게 출력하도록 한다.
+// 2. 
+
 // block 생성
 void make_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (block[block_index][rotate_index][i][j] == 1) {
-				//setcolor(4, 0);
-				gotoxy(j + xx, i + yy);
-				printf("*");
-				//setcolor(7, 0);
+				if (block_index == 0) {
+					setcolor(4, 0);
+					gotoxy(j + xx, i + yy);
+					printf("*");
+					setcolor(7, 0);
+					
+				}
+				else if (block_index == 1) {
+					setcolor(1, 0);
+					gotoxy(j + xx, i + yy);
+					printf("*");
+					setcolor(7, 0);
+				}
 			}
 			//else {
 			//	gotoxy(j + xx, i + yy);
@@ -162,8 +186,9 @@ void delete_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (block[block_index][rotate_index][i][j] == 1 && background[i + yy][j + xx] != 1) {
-				gotoxy(j + xx, i + yy);
-				printf("-");
+					gotoxy(j + xx, i + yy);
+					printf("-");
+				}
 			}
 			//else {
 			//	gotoxy(j + xx, i + yy);
@@ -173,13 +198,11 @@ void delete_block(int xx, int yy) {
 		printf("\n");
 	}
 
-}
-
 int overlap_check(int xx, int yy) {
 	int count_overlap = 0;
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[block_index][rotate_index][j][i] == 1 && background[j + yy][i + xx] == 1)
+			if (block[block_index][rotate_index][j][i] == 1 && background[j + yy][i + xx] >= 1)
 			{
 				//setcolor(4, 0);
 				//gotoxy(xx + i, yy + j);
@@ -202,7 +225,7 @@ int overlap_check_rotate(int rotate_index_local, int xx, int yy) {
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[block_index][rotate_index_local][j][i] == 1 && background[j + yy][i + xx] == 1)
+			if (block[block_index][rotate_index_local][j][i] == 1 && background[j + yy][i + xx] >= 1)
 			{
 				count_overlap++;
 			}
@@ -218,7 +241,12 @@ void insert_block(int xx , int yy) {
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
 			if (block[block_index][rotate_index][j][i] == 1) {
-				background[j + yy][i + xx] = 1;
+				if (block_index == 0) {
+					background[j + yy][i + xx] = 2;
+				}
+				else if (block_index == 1) {
+					background[j + yy][i + xx] = 3;
+				}
 			}
 		}
 	}
@@ -229,7 +257,7 @@ int line_check(int line_num) {
 	
 	int count_block = 0; // 가로 줄에서 블럭이 몇개 있는지 카운트 -> 현 예제에서는 10개이면 한줄 빙고
 	for (int i = 0; i < 10; i++) { // 가로줄에서 1~10까지 column을 10번 체크한다.
-		if (background[line_num][i + 1] == 1) { // column의 값이 1이면 count_block를 증가시킨다.
+		if (background[line_num][i + 1] >= 1) { // column의 값이 1이면 count_block를 증가시킨다.
 			count_block++;
 		}
 	}
