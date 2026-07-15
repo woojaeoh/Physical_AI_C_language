@@ -4,7 +4,6 @@
 #include <conio.h>
 
 void gotoxy(int x, int y) { // 콘솔화면 내에서 x,y좌표로 이동
-
 	COORD Pos;
 	Pos.X = x;
 	Pos.Y = y;
@@ -25,12 +24,16 @@ void setcolor(int text_color, int bg_color)
 //};
 
 // 이동 좌표값 - 직접 ++, -- 처럼 관리 필요
+// x, y : 백그라운드의 행, 열을 나타내는 좌표 - 4x4 블락의 제일 왼쪽/위의 좌표이다.
 int x = 3;
 int y = 0;
+// count : 10ms 마다 카운팅해서 1초를 만들기 위한 변수
 int count = 0;
-int rotate_index = 0;
+int rotate_index = 0; // 같은 블럭을 회전했을 때 구분하는 인덱스
+int block_index = 0; //블럭 종류를 구분하는 인덱스
 
-char block[4][4][4] ={
+char block[2][4][4][4] ={
+		{
 			{ // 예제 테트리스 블럭 모양
 				{ 0, 0, 0, 0 },
 				{ 0, 1, 0, 0 },
@@ -55,6 +58,32 @@ char block[4][4][4] ={
 				{ 0, 1, 1, 0 },
 				{ 0, 0, 0, 0 }
 			}
+		}, {
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 0, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 0, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 0, 0, 0 }
+			},
+			{ // 예제 테트리스 블럭 모양
+				{ 0, 0, 0, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 1, 1, 0 },
+				{ 0, 0, 0, 0 }
+			}
+		}
 };
 
 char background[12][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다.
@@ -113,7 +142,7 @@ void make_background_value() {
 void make_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[rotate_index][i][j] == 1) {
+			if (block[block_index][rotate_index][i][j] == 1) {
 				//setcolor(4, 0);
 				gotoxy(j + xx, i + yy);
 				printf("*");
@@ -132,7 +161,7 @@ void make_block(int xx, int yy) {
 void delete_block(int xx, int yy) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (block[rotate_index][i][j] == 1 && background[i + yy][j + xx] != 1) {
+			if (block[block_index][rotate_index][i][j] == 1 && background[i + yy][j + xx] != 1) {
 				gotoxy(j + xx, i + yy);
 				printf("-");
 			}
@@ -150,7 +179,7 @@ int overlap_check(int xx, int yy) {
 	int count_overlap = 0;
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[rotate_index][j][i] == 1 && background[j + yy][i + xx] == 1)
+			if (block[block_index][rotate_index][j][i] == 1 && background[j + yy][i + xx] == 1)
 			{
 				//setcolor(4, 0);
 				//gotoxy(xx + i, yy + j);
@@ -173,7 +202,7 @@ int overlap_check_rotate(int rotate_index_local, int xx, int yy) {
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[rotate_index_local][j][i] == 1 && background[j + yy][i + xx] == 1)
+			if (block[block_index][rotate_index_local][j][i] == 1 && background[j + yy][i + xx] == 1)
 			{
 				count_overlap++;
 			}
@@ -188,7 +217,7 @@ int overlap_check_rotate(int rotate_index_local, int xx, int yy) {
 void insert_block(int xx , int yy) {
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block[rotate_index][j][i] == 1) {
+			if (block[block_index][rotate_index][j][i] == 1) {
 				background[j + yy][i + xx] = 1;
 			}
 		}
@@ -269,6 +298,11 @@ void main() {
 
 				x = 3;
 				y = 0;
+				rotate_index = 0; //초기화해서 첫 모양으로.
+				block_index++; // 블럭 종류 변경
+				if (block_index == 2) { // 블럭 종류가 2개이므로, 2를 넘으면 다시 0으로 초기화
+					block_index = 0;
+				}
 			}			
 		}
 
