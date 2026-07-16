@@ -265,7 +265,7 @@ typedef struct {
 
 tetris_var_t tetris_var = {
 	.x = 3,
-	.y = 1,
+	.y = 0,
 	.count = 0,
 	.rotate_index = 0,
 	.block_index = 0,
@@ -411,23 +411,22 @@ int overlap_check(tetris_var_t* var_p, int xx, int yy) {
 	return count_overlap;
 }
 
-int overlap_check_rotate(tetris_var_t* var_p, int rotate_index_local) {
+int overlap_check_rotate(tetris_var_t* var_p) {
 
 	char (*block_p)[4][4][4] = var_p->block_p;
 	char (*background_p)[12] = var_p->background_p;
 	int count_overlap = 0;
 
 	//rotate_index 변수를 받아서 임시변수(rotate_index_tmp)를 만든다.
-	//int rotate_index_tmp = var_p->rotate_index;
-	//rotate_index_tmp++; //임시 변수 rotate_index_tmp를 하나 증가시켜서
-	//if (rotate_index_tmp == 4) { // 마지막 회전 블락을 넘어서 index가 4면, 처음으로 돌린다.
-	//	rotate_index_tmp = 0;
-	//}
-	//int rotate_index_tmp = var_p->rotate_index;
+	int rotate_index_tmp = var_p->rotate_index;
+	rotate_index_tmp++; //임시 변수 rotate_index_tmp를 하나 증가시켜서
+	if (rotate_index_tmp == 4) { // 마지막 회전 블락을 넘어서 index가 4면, 처음으로 돌린다.
+		rotate_index_tmp = 0;
+	}
 	
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			if (block_p[var_p->block_index][rotate_index_local][j][i] == 1 && background_p[j + var_p->y][i + var_p->x] >= 1)
+			if (block_p[var_p->block_index][rotate_index_tmp][j][i] == 1 && background_p[j + var_p->y][i + var_p->x] >= 1)
 			{
 				count_overlap++;
 			}
@@ -577,15 +576,15 @@ void main() {
 			char key = _getch();
 			if (key == 'w') { // w: rotate key (회전 키)
 				
-				//rotate_index 변수를 받아서 임시변수(rotate_index_tmp)를 만든다.
-				int rotate_index_tmp = tetris_var_p->rotate_index;
-				rotate_index_tmp++; //임시 변수 rotate_index_tmp를 하나 증가시켜서
-				if (rotate_index_tmp == 4) { // 마지막 회전 블락을 넘어서 index가 4면, 처음으로 돌린다.
-					rotate_index_tmp = 0;
-				}
+				////rotate_index 변수를 받아서 임시변수(rotate_index_tmp)를 만든다.
+				//int rotate_index_tmp = tetris_var_p->rotate_index;
+				//rotate_index_tmp++; //임시 변수 rotate_index_tmp를 하나 증가시켜서
+				//if (rotate_index_tmp == 4) { // 마지막 회전 블락을 넘어서 index가 4면, 처음으로 돌린다.
+				//	rotate_index_tmp = 0;
+				//}
 
 				// 회전할 떄 ,overlap이 나는지 미리 체크해서 rotate가 문제 없다면 회전함.
-				int count_overlap_rotate = overlap_check_rotate(tetris_var_p, rotate_index_tmp);
+				int count_overlap_rotate = overlap_check_rotate(tetris_var_p);
 				if (count_overlap_rotate == 0) {
 					delete_block(tetris_var_p);
 				
