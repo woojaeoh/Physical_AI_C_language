@@ -257,6 +257,7 @@ typedef struct {
 	int block_index; //블럭 종류를 구분하는 인덱스
 	int prev_index;
 
+
 	char (*block_p)[4][4][4];
 	char (*background_p)[12]; // 배열 포인터
 }tetris_var_t;
@@ -264,7 +265,7 @@ typedef struct {
 
 tetris_var_t tetris_var = {
 	.x = 3,
-	.y = 0,
+	.y = 1,
 	.count = 0,
 	.rotate_index = 0,
 	.block_index = 0,
@@ -416,6 +417,14 @@ int overlap_check_rotate(tetris_var_t* var_p, int rotate_index_local) {
 	char (*background_p)[12] = var_p->background_p;
 	int count_overlap = 0;
 
+	//rotate_index 변수를 받아서 임시변수(rotate_index_tmp)를 만든다.
+	//int rotate_index_tmp = var_p->rotate_index;
+	//rotate_index_tmp++; //임시 변수 rotate_index_tmp를 하나 증가시켜서
+	//if (rotate_index_tmp == 4) { // 마지막 회전 블락을 넘어서 index가 4면, 처음으로 돌린다.
+	//	rotate_index_tmp = 0;
+	//}
+	//int rotate_index_tmp = var_p->rotate_index;
+	
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
 			if (block_p[var_p->block_index][rotate_index_local][j][i] == 1 && background_p[j + var_p->y][i + var_p->x] >= 1)
@@ -447,6 +456,7 @@ void insert_block(tetris_var_t* var_p) {
 // line_check() : 각 줄(line_num)마다 , 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
 int line_check(tetris_var_t* var_p, int line_num) {
 	char (*background_p)[12] = var_p->background_p;
+
 	int count_block = 0; // 가로 줄에서 블럭이 몇개 있는지 카운트 -> 현 예제에서는 10개이면 한줄 빙고
 	for (int i = 0; i < 10; i++) { // 가로줄에서 1~10까지 column을 10번 체크한다.
 		if (background_p[line_num][i + 1] >= 1) { // column의 값이 1이면 count_block를 증가시킨다.
@@ -516,7 +526,7 @@ void main() {
 				// 위의 줄은 체크하지 못한다. 이미 내려와있기 때문에,
 				//그래서 k는 2~10까지 체크한다.
 				// k가 2부터인 경우는 제일 위의 줄은 제외하기 떄문이다.
-				for (int k = 2; k <= 10; k++) {
+				for (int k = 2; k <= 20; k++) {
 
 					int count_block = line_check(tetris_var_p, k); // 한 줄이 다 찼는지 체크 -> 10칸이 다 찼는지 체크.
 					if (count_block == 10) { //한 줄이 꽉 찼다는 의미
@@ -524,14 +534,14 @@ void main() {
 						// 2. 위에 있는 블럭들을 한 줄씩 내려줘야 함. -> 위의 한 줄을 밑 줄에 copy한다.
 						for (int j = k; j > 1; j--) {
 							for (int i = 0; i < 10; i++) {
-								background[j][i + 1] = background[j - 1][i + 1]; // 위 과정을 한번에 처리.-> 9번줄에서 10번줄로 copy처리
+								tetris_var_p->background_p[j][i + 1] = tetris_var_p->background_p[j - 1][i + 1]; // 위 과정을 한번에 처리.-> 9번줄에서 10번줄로 copy처리
 							}
 						}
 			
 						// 첫 줄도 업데이트를 해줘야 한다
 						// -> 첫 줄을 모두 0으로 채우기
 						for (int i = 0; i < 10; i++) {
-							background[1][i + 1] = 0;
+							tetris_var_p->background_p[1][i + 1] = 0;
 						}
 
 						// 백그라운드 블락을 다시 그려준다.
@@ -575,7 +585,7 @@ void main() {
 				}
 
 				// 회전할 떄 ,overlap이 나는지 미리 체크해서 rotate가 문제 없다면 회전함.
-				int count_overlap_rotate = overlap_check_rotate(tetris_var_p, tetris_var_p-> rotate_index);
+				int count_overlap_rotate = overlap_check_rotate(tetris_var_p, rotate_index_tmp);
 				if (count_overlap_rotate == 0) {
 					delete_block(tetris_var_p);
 				
