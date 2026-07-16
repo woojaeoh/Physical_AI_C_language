@@ -17,7 +17,7 @@ void main() {
 	// def_p는 포인터 변수인데, 배열 3개를 담는 포인터 배열이다.
 	// def_p[0], def_p[1] . def_p[2] ==> 각각 3개의 포인터 변수이다.
 
-	char* def_p[3] = { (char*)"234", (char*)"345", (char*) "abc"};
+	char* def_p[3] = { (char*)"234", (char*)"345", (char*) "abc"}; //문자열을 받는 타입이 없음 -> char형배열이나 char*형으로 문자열을 저장해야함 -> 배열이니 문자열 자체를 포인터처럼 접근할 수 있다.
 	def_p[0] = (char *)"123"; // 변수는 아니지만 , "" (문자열) 자체는 주소이다.
 	printf("%s %s %c %c", "123", def_p[0], *(def_p[1] + 2), *(*(def_p+2)+1)); // %s자리에는 포인터(주소)가 들어간다.
 
@@ -96,14 +96,43 @@ void main() {
 	printf("%d \n", array_p_tmp[1][0]); //3
 
 
+	typedef int int_type;
+	int_type abc_type = 5;
+
+	typedef unsigned char uint8_t; // 8bit unsigned char
+	typedef unsigned short uint16_t; // 16bit unsigned short를 재정의
+	typedef unsigned int uint32_t; //32bit unsigned int를 재정의
+
+	typedef struct { // 4 + 4 + 4 => 12바이트가 잡힘.
+		char aa;
+		int bb;
+		char (*abc_p)[2]; // 배열 포인터 -> 4바이트.
+	}struct_var_t;
+
+	char array_2[2][2] = { {1,2},{3,4} };
+	struct_var_t struct_var;
+	struct_var.aa = 5;
+	struct_var.bb = 3;
+	struct_var.abc_p = array_2;
+	printf("%d \n", struct_var.abc_p[1][0]); // 3
+
+
+	struct_var.abc_p = &array_2[1]; //array_2의 주소를 알아야 array_2[1]에 접근할 수 있고, array_2[1]자체는 1차원 배열이니, 1차원 배열의 요소에 접근할 때는 &연산자를 붙여줘야한다	
+	printf("%d \n", struct_var.abc_p[0][1]);
+
+	
+	//struct를 만들어만 놓으면 메모리에 안잡힘 -> 선언을 해야 메모리에 잡힘.
+
+	
+
+
+
+
 	// byte allignment  ,-> 5바이트여도 8바이트 가져옴
 	// 
 	// 
 	//----------------------------------------
 	//----------------------------------------
 	//----------------------------------------
-
-
-
 
 }
