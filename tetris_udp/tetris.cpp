@@ -204,12 +204,12 @@ char background[22][12] = { // 바깥쪽을 2씩 감싸고 10x10으로 쓰겟다
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,2,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,3,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,0,0,1},
@@ -495,6 +495,25 @@ void make_preview_block(tetris_var_t* var_p) {
 	}
 }
 
+void make_attacked_line(tetris_var_t* var_p) {
+
+	char (*background_p)[12] = var_p->background_p;
+
+	// 2번줄부터 차례로 내려가면서, 2->1 , 3->2 , 4->3 ... 이 순서로 해야 함.
+
+	// 2번 줄을 1번 줄로 올린다.
+
+	// for문을 이용해서 20번 줄을 19번 줄로 10칸(한 줄) 올린다.
+	for (int j = 2; j <= 20; j++) {
+		for (int i = 0; i < 10; i++) {
+			background_p[j - 1][i + 1] = background_p[j][i + 1];
+		}
+	}
+
+	make_background(var_p);
+	make_background_value(var_p); // 숫자형 점수판 삽입
+}
+
 void main() {
 
 	tetris_var_t* tetris_var_p = &tetris_var; //전역 변수로 한번 선언해줘야한다? 포인터만 들고다니면 구조체에 접근이 가능하다 .
@@ -631,19 +650,7 @@ void main() {
 				}
 			}
 			else if (key == 'i') { // i: 한 줄을 위로 올려버림.
-				// 2번줄부터 차례로 내려가면서, 2->1 , 3->2 , 4->3 ... 이 순서로 해야 함.
-
-				// 2번 줄을 1번 줄로 올린다.
-
-				// for문을 이용해서 20번 줄을 19번 줄로 10칸(한 줄) 올린다.
-				for (int j = 2; j <= 20; j++) {
-					for (int i = 0; i < 10; i++) {
-						tetris_var_p->background_p[j-1][i + 1] = tetris_var_p->background_p[j][i + 1];
-					}
-				}
-
-				make_background(tetris_var_p);
-				make_background_value(tetris_var_p); // 숫자형 점수판 삽입
+				make_attacked_line(tetris_var_p);
 			}
 
 		}
