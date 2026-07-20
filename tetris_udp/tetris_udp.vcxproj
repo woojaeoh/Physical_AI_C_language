@@ -139,7 +139,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\tetris_2\udp_server_client.cpp" />
     <ClCompile Include="tetris.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="udp_server_client.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

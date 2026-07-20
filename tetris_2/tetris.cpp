@@ -2,6 +2,8 @@
 
 #include<windows.h>
 #include <conio.h>
+#include <thread>
+//nclude "udp_server_client.h"
 
 void gotoxy(int x, int y) { // 콘솔화면 내에서 x,y좌표로 이동
 	COORD Pos;
@@ -30,7 +32,7 @@ char block[7][4][4][4] = {
 				{ 0, 1, 0, 0 },
 				{ 0, 1, 0, 0 }
 			},
-			{ // 예제 테트리스 블럭 모양
+			{ // 예제 테트리스 블럭 모양모양
 				{ 0, 0, 0, 0 },
 				{ 1, 1, 1, 0 },
 				{ 0, 0, 1, 0 },
@@ -495,6 +497,7 @@ void make_preview_block(tetris_var_t* var_p) {
 	}
 }
 
+
 void main() {
 
 	tetris_var_t* tetris_var_p = &tetris_var; //전역 변수로 한번 선언해줘야한다? 포인터만 들고다니면 구조체에 접근이 가능하다 .
@@ -570,6 +573,8 @@ void main() {
 				// make_block을 해주는 이유 생각해보기
 				make_block(tetris_var_p);
 			}			
+
+			//udp_data_send();
 		}
 
 		if (_kbhit()) { // 키보드 입력이 있다면 
@@ -632,6 +637,8 @@ void main() {
 			}
 
 		}
+
+		//10ms마다 루프 돌려서 카운팅
 		tetris_var_p->count++;
 		Sleep(10);
 	}

@@ -5,9 +5,13 @@
 #include <WinSock2.h>
 #include <thread> // c++에서는 thread , c에서는 thread.h
 
+#include "udp_server_client.h"
+
 #pragma comment(lib, "ws2_32.lib")
 
 #define MAX 512
+
+int udp_received = 0;
 
 //struct sockaddr_in {
 //	short sin_family;          // Address family (must be AF_INET)
@@ -74,17 +78,24 @@ void udpServer(char* portNumber)
 	while (1)
 	{
 		recvfrom(s1, buf, MAX, 0, (struct sockaddr*)&s1ClntAddr, &s1len);
-		printf("recv : %s\n", buf);
+		//printf("recv : %s\n", buf);
+
+		udp_received = 1;
 	}
 
 }
 
+SOCKET s1;
+char buf[MAX] = "\0"; //메세지를 받을 공간
+struct sockaddr_in s1ServAddr;
+int count = 0;
+
 void udpClient(char* IPaddress, char* portNumber) //htons로 바꾸기? 
 {
 	WSADATA wsaData;
-	SOCKET s1;
-	struct sockaddr_in s1ServAddr;
-	char buf[MAX] = "\0"; //메세지를 받을 공간
+//	SOCKET s1;
+//	struct sockaddr_in s1ServAddr;
+//	char buf[MAX] = "\0"; //메세지를 받을 공간
 	int slen;
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -110,17 +121,26 @@ void udpClient(char* IPaddress, char* portNumber) //htons로 바꾸기?
 	buf[2] = 'h';
 	buf[3] = 'a';
 
-	int count = 0;
-	while (1)
-	{
-		sprintf(buf, "haha = %d", count++); //sprintf -> 문자열 구성 자체를 buf에 넣는다.
-		sendto(s1, buf, MAX, 0, (struct sockaddr*)&s1ServAddr, sizeof(s1ServAddr));
+	//int count = 0;
+	//while (1)
+	//{
+	//	sprintf(buf, "haha = %d", count++); //sprintf -> 문자열 구성 자체를 buf에 넣는다.
+	//	sendto(s1, buf, MAX, 0, (struct sockaddr*)&s1ServAddr, sizeof(s1ServAddr));
 
-		printf("sent : %s \n", buf);
+	//	printf("sent : %s \n", buf);
 
-		Sleep(1000);
-	}
+	//	Sleep(1000);
+	//}
 
+	//send to -> while문을 막아서 한줄 없애면 쏘겠다는 걸로 변경 
+}
+
+void udp_data_send(){ // while문 -> sendto를 대신하는 함수
+	
+	//sprintf(buf, "haha = %d", count++); //sprintf -> 문자열 구성 자체를 buf에 넣는다.
+	sprintf(buf, "i");
+	int buf_length = strlen(buf);
+	sendto(s1, buf, buf_length, 0, (struct sockaddr*)&s1ServAddr, sizeof(s1ServAddr));
 }
 
 int count_thread;

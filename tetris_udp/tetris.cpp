@@ -2,6 +2,9 @@
 
 #include<windows.h>
 #include <conio.h>
+#include <thread>
+
+#include "udp_server_client.h"
 
 void gotoxy(int x, int y) { // 콘솔화면 내에서 x,y좌표로 이동
 	COORD Pos;
@@ -9,7 +12,7 @@ void gotoxy(int x, int y) { // 콘솔화면 내에서 x,y좌표로 이동
 	Pos.Y = y;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
-
+	
 void setcolor(int text_color, int bg_color)
 {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), text_color + (bg_color << 4));
@@ -509,12 +512,24 @@ void make_attacked_line(tetris_var_t* var_p) {
 			background_p[j - 1][i + 1] = background_p[j][i + 1];
 		}
 	}
+	
+	char random_value[10] = { 3,4 ,3, 5,6,1 ,2 ,0, 2, 1 };
+	for (int i = 0; i < 10; i++) {
+		var_p->background_p[20][i + 1] = random_value[i];
+	}
 
 	make_background(var_p);
 	make_background_value(var_p); // 숫자형 점수판 삽입
 }
 
+char* udp_client_ip_addr = (char*)"172.30.1.60"; //상대방 ip
+char* udp_client_port = (char*)"3000"; // 상대방 포트ㅡ
+
 void main() {
+
+	std::thread t(udp_server_func);
+	udpClient(udp_client_ip_addr, udp_client_port); // 계속 recv때문에 테트리스로 실행이 안됌.
+
 
 	tetris_var_t* tetris_var_p = &tetris_var; //전역 변수로 한번 선언해줘야한다? 포인터만 들고다니면 구조체에 접근이 가능하다 .
 
@@ -566,6 +581,9 @@ void main() {
 						make_background(tetris_var_p);
 						// + 값도 삽입
 						make_background_value(tetris_var_p); // 숫자형 점수판 삽입
+
+						udp_data_send();
+
 						Sleep(300);
 					}
 				}
@@ -589,6 +607,7 @@ void main() {
 				// make_block을 해주는 이유 생각해보기
 				make_block(tetris_var_p);
 			}
+			udp_data_send();
 		}
 
 		if (_kbhit()) { // 키보드 입력이 있다면 
@@ -654,6 +673,14 @@ void main() {
 			}
 
 		}
+
+		//	check_udp_data();
+		if (udp_received == 1) {
+			udp_received = 0;
+
+			make_attacked_line(tetris_var_p);
+		}
+
 		tetris_var_p->count++;
 		Sleep(10);
 	}
