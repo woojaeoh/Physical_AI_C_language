@@ -8,5 +8,6 @@
   <Project Path="test/test.vcxproj" Id="9722f07e-39fc-4e0e-83ae-3239908af1d8" />
   <Project Path="test0715/test0715.vcxproj" Id="a0131469-3418-4b07-a949-2186207e144e" />
   <Project Path="tetris_2/tetris_2.vcxproj" Id="933c52da-ba19-4162-9a5b-88ed5f44b4bc" />
+  <Project Path="tetris_udp/tetris_udp.vcxproj" Id="d14aa08e-06d6-4f0c-9a3b-bb8582fba521" />
   <Project Path="udp_server_client/udp_server_client.vcxproj" Id="5ad4c030-946d-489e-bace-ced6126032ee" />
 </Solution>
